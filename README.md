@@ -183,10 +183,109 @@ stages:
 * This is because we have not yet created a VM and assigned it as an agent even we've only mentioned that we will be using an agent.
 
 ## Create VM Agent
+* create a VM in the sam resource group.
+* In az devops portal go to project settings>agent pools>add pool.
+* In the configuration, select self-hosted and name it as azureagent. tick the box Grant access permission to all pipelines. click create.
+  
+<img width="605" height="862" alt="image" src="https://github.com/user-attachments/assets/55ee18bf-0a01-4203-9be5-2a40a44b963e" />
+ <img width="387" height="385" alt="image" src="https://github.com/user-attachments/assets/1e467702-21f5-4709-9ffb-0f9d08a96383" />
 
+* to integrate this VM called azureagent which is on the Microsoft Azure platform with the pipelines that are on the Azure DevOps Platform.
 
+For this, there are some commands which you will get from Azure DevOps documentation.
 
+Link For Azure DevOps Docs:https://learn.microsoft.com/en-us/azure/devops/pipelines/?view=azure-devops
+Direct Link to Self-hosted Linux agents:https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/linux-agent?view=azure-devops
+* select the created pool. click on agents tab > new agent.
+* in the tab open select linux. we need to run these commands on our VM.
+  
+<img width="982" height="820" alt="image" src="https://github.com/user-attachments/assets/a3580ec4-749b-479b-9883-4347e9d1cd7a" />
 
+* Open gitbash.
+* move to downloads folder.
+* give permissions to .pem file
+* ssh into the VM.
+* copy the commands from the previous agent tab and run on the terminal.
+* move into myagent folder
+```
+mkdir myagent && cd myagent
+```
+* first copy that link and use wget to download.
+```
+ wget https://download.agent.dev.azure.com/agent/4.261.0/vsts-agent-linux-x64-4.261.0.tar.gz
+```
+* run the tar file
+```
+tar zxvf vsts-agent-linux-x64-4.261.0.tar.gz
+```
+then run ./config.sh
+
+it asks for server URL. get it from the azure docs.
+
+<img width="620" height="145" alt="image" src="https://github.com/user-attachments/assets/07d97d9c-c907-4ad4-bbfc-30d8b26f2848" />
+
+replace {your-organization} with the name of your org registered in your azure devops platform.
+
+ <img width="445" height="178" alt="image" src="https://github.com/user-attachments/assets/92ba20ea-e621-4e4a-bd79-a2179ab85a7f" />
+
+it will ask for PAT. Get it from azure devops platform > user settings > personal access token. give a name and create.
+
+<img width="777" height="862" alt="image" src="https://github.com/user-attachments/assets/a27aae95-159c-47e0-897a-8b7a56c03679" />
+
+copy the displayed PAT and paste it in the command.
+
+it will prompt you to enter the azure agent pool name. my created pool name is azureagent.
+
+now the agent connection is successful.
+
+To verify the azure agent, go to azure devops and go to settings>agents.
+
+You will see that the agent is created but its offline. 
+
+<img width="913" height="302" alt="image" src="https://github.com/user-attachments/assets/1e9dfea3-edae-45b0-8dd8-3418d7f1d6ac" />
+
+Before we turn the agent online or run jobs, we need to install docker on the agent since we're running containers.
+
+```
+sudo apt install docker.io
+```
+Grant the azureuser permissions to the docker daemon.
+```
+sudo usermod -aG docker azureuser
+sudo systemctl restart docker
+sudo systemctl status docker
+```
+<img width="691" height="106" alt="image" src="https://github.com/user-attachments/assets/59b263d0-a8e4-4eaf-839b-5b9f9e5de5cb" />
+
+Now Start the agent using 
+```
+./run.sh
+```
+<img width="401" height="90" alt="image" src="https://github.com/user-attachments/assets/371482be-4add-4518-85ff-734f7b024cd7" />
+
+Now the agent is online
+
+<img width="653" height="292" alt="image" src="https://github.com/user-attachments/assets/de6a9cb4-dadc-448c-8e40-4d2a724478b6" />
+
+On azure devops, go to pipeline>run pipeline.
+
+<img width="738" height="773" alt="image" src="https://github.com/user-attachments/assets/0cf8252c-89b8-4bf1-9410-789462f3950b" />
+
+<img width="712" height="382" alt="image" src="https://github.com/user-attachments/assets/a8202530-15ed-4831-a9fb-6bbf09a6beaa" />
+
+<img width="658" height="232" alt="image" src="https://github.com/user-attachments/assets/aa6de1fd-afed-4004-8ed1-d57842b1997e" />
+
+now try doing a change to the code of result yaml. when committed, the pipeline should run automatically. I entered a comment to the code.
+
+<img width="395" height="205" alt="image" src="https://github.com/user-attachments/assets/1d8c93e0-0e9b-4213-b630-0669705b3049" />
+
+Notice in the pipeline running, now it says "individual CI" instead of "manually run"
+
+<img width="1513" height="456" alt="image" src="https://github.com/user-attachments/assets/d23304ff-b9bd-4bf0-9ad9-b3b0fe097a79" />
+
+Make the same changes to the vote and worker microservice as well. there are two pipelines created now with the same name voting-app. rename the first one as result-service and second one as vote-service.
+
+<img width="1376" height="482" alt="image" src="https://github.com/user-attachments/assets/57391f7d-fd0b-4364-bd5e-76301cd23754" />
 
 
 
